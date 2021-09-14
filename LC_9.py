@@ -1,9 +1,10 @@
 import logging
-
 import Logging
 
 Logging.logging_function()
 logger = logging.getLogger(__name__)
+
+# https://leetcode.com/problems/palindrome-number/
 
 class LC_9():
 
