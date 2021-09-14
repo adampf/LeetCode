@@ -13,7 +13,7 @@ class LC_7():
         if original_value < 0:
             negative_flag = True
 
-        if x == 0 or x > 2147483648 or x < -2147483648:
+        if x == 0 or x >= 2147483648 or x <= -2147483648:
             return 0
 
         while abs_x != 1:
@@ -79,17 +79,17 @@ class LC_7():
 
         return final_digit
 
-    print(reverse_signed_integer(123))
-    print(reverse_signed_integer(-123))
-    print(reverse_signed_integer(120))
-    print(reverse_signed_integer(0))
-    print(reverse_signed_integer(900000))
-
-    # This doesn't work .... need to change logic when there are leading 0's
-    print(reverse_signed_integer(901000))
-    print(reverse_signed_integer(1534236469))
-    print(reverse_signed_integer(-901000))
-    print(reverse_signed_integer(2147483647))
+    # print(reverse_signed_integer(123))
+    # print(reverse_signed_integer(-123))
+    # print(reverse_signed_integer(120))
+    # print(reverse_signed_integer(0))
+    # print(reverse_signed_integer(900000))
+    #
+    # # This doesn't work .... need to change logic when there are leading 0's
+    # print(reverse_signed_integer(901000))
+    # print(reverse_signed_integer(1534236469))
+    # print(reverse_signed_integer(-901000))
+    # print(reverse_signed_integer(2147483647))
     print(reverse_signed_integer(-2147483648))
 
 
