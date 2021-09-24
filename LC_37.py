@@ -167,26 +167,91 @@ class LC_37():
 
         logger.debug(grid_elements)
 
+        return grid_elements
+
     # TODO: Find digits that are not found in each 3x3 grid
+
+
+
 
     # For any blank space:
     # Does the digit exist in it's row?
     # Does the digit exist in it's column?
     # Does the digit exist in it's 3x3 grid?
 
-    def trythislol(board):
-        logger.warning("Find the missing digits in each row of the Sudoku board")
-        LC_37.find_missing_digits(board)
-        logger.warning(
-            "Transpose rows into columns so that we can find the missing digits in each column of the Sudoku board")
-        change_rows_to_columns = LC_37.transpose_rows_to_columns(board)
-        logger.warning("Find the missing digits in each column of the Sudoku board")
-        LC_37.find_missing_digits(change_rows_to_columns)
-        LC_37.create_lists_for_grids(board, change_rows_to_columns, 9)
+    # def trythislol(board):
+    logger.warning("Find the missing digits in each row of the Sudoku board")
+    missing_digits_rows = find_missing_digits(board)
+    logger.warning(
+        "Transpose rows into columns so that we can find the missing digits in each column of the Sudoku board")
+    change_rows_to_columns = transpose_rows_to_columns(board)
+    logger.warning("Find the missing digits in each column of the Sudoku board")
+    missing_digits_columns = find_missing_digits(change_rows_to_columns)
+    missing_digits_grid = create_lists_for_grids(board, change_rows_to_columns, 9)
+
+
+
+    # for x in range(9):
+    #     board
+
+    # choose row 1
+    def trythisloll(board, missing_digits_rows, missing_digits_columns, missing_digits_grid):
+
+        logger.critical(missing_digits_rows)
+        logger.critical(missing_digits_columns)
+        logger.critical(missing_digits_grid)
+
+        # used to identify the row of the board
+        i = 0
+        # used to identify the column of the board
+        j = 0
+        # used to iterate through digits 1 through 9 like in a Sudoku game
+        k = 1
+        # used to identify the element in missing_digits_rows
+        m = 0
+        # used to identify the element of element m in missing_digits_rows
+        p = 0
 
         for x in range(9):
-            board
-    # choose row 1
+            for y in range(9):
+                # if a spot on the board is blank
+                if board[i][j] == ".":
+                    logger.debug("Missing value at row {} column {}".format(i, j))
+                    logger.critical(missing_digits_rows[m][p])
+
+                    # check if the first digit from our known missing values (rows) exists in our current row
+                    if k in missing_digits_rows[m]:
+                        # this means digit "k" lives in the row
+                        missing_from_row = True
+
+                    # check if the first digit from our known missing values (columns) exists in our current row
+                    if k in missing_digits_columns[m]:
+                        # this means digit "k" lives in the column
+                        missing_from_column = True
+
+                    # check if the first digit from our known missing values (grid) exists in our current row
+                    if k in missing_digits_grid:
+                        # this means digit "k" lives in the grid
+                        missing_from_grid = True
+
+                    if missing_from_row and missing_from_column and missing_from_grid:
+                        # TODO: or does this actually mean the digit for sure will live in this spot?
+                        logger.warning("Digit {} could potentially live in spot {} {}".format(k, m, p))
+                    else:
+                        logger.warning("Digit {} CANNOT live in spot {} {}".format(k, m, p))
+                missing_from_row = False
+                missing_from_column = False
+                missing_from_grid = False
+
+                j += 1
+            i += 1
+            k += 1
+            j = 0
+
+    trythisloll(board, missing_digits_rows, missing_digits_columns, missing_digits_grid)
+
+
+
     # find the first blank space
     # check if digit 1 exists in the row
     # check if digit 1 exists in the column
