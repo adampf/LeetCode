@@ -250,19 +250,28 @@ class LC_37():
 
         return board
 
-    logger.warning("Find the missing digits in each row of the Sudoku board")
-    # Creates a list of lists
-    missing_digits_rows = find_missing_digits(board)
-    logger.warning(
-        "Transpose rows into columns so that we can find the missing digits in each column of the Sudoku board")
-    change_rows_to_columns = transpose_rows_to_columns(board)
-    logger.warning("Find the missing digits in each column of the Sudoku board")
-    missing_digits_columns = find_missing_digits(change_rows_to_columns)
-    change_grid_to_rows = create_lists_for_grids(board, change_rows_to_columns)
-    missing_digits_grid = find_missing_digits(change_grid_to_rows)
-    test_digits(board, missing_digits_rows, missing_digits_columns, missing_digits_grid)
+    b = 0
+    for row in board:
+        while "." in row:
+            logger.critical("**********************************************************************")
+            logger.warning("Find the missing digits in each row of the Sudoku board")
+            # Creates a list of lists
+            missing_digits_rows = find_missing_digits(board)
+            logger.warning(
+                "Transpose rows into columns so that we can find the missing digits in each column of the Sudoku board")
+            change_rows_to_columns = transpose_rows_to_columns(board)
+            logger.warning("Find the missing digits in each column of the Sudoku board")
+            missing_digits_columns = find_missing_digits(change_rows_to_columns)
+            change_grid_to_rows = create_lists_for_grids(board, change_rows_to_columns)
+            missing_digits_grid = find_missing_digits(change_grid_to_rows)
+            test_digits(board, missing_digits_rows, missing_digits_columns, missing_digits_grid)
 
-    logger.debug("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board))
+            logger.debug("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board))
+            b += 1
+        logger.warning("ran this {} times".format(b))
+
+    # logger.critical(board)
+    logger.critical("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board))
 
     # TODO: Is there something we can do with the information of "X digit CANNOT live in row..." ?
 
@@ -274,33 +283,5 @@ class LC_37():
     # def sum_column_value(self):
         # In the case of a 9x9, that number is 45
 
-    logger.critical("**********************************************************************")
-    logger.warning("Find the missing digits in each row of the Sudoku board")
-    # Creates a list of lists
-    missing_digits_rows = find_missing_digits(board)
-    logger.warning(
-        "Transpose rows into columns so that we can find the missing digits in each column of the Sudoku board")
-    change_rows_to_columns = transpose_rows_to_columns(board)
-    logger.warning("Find the missing digits in each column of the Sudoku board")
-    missing_digits_columns = find_missing_digits(change_rows_to_columns)
-    change_grid_to_rows = create_lists_for_grids(board, change_rows_to_columns)
-    missing_digits_grid = find_missing_digits(change_grid_to_rows)
-    test_digits(board, missing_digits_rows, missing_digits_columns, missing_digits_grid)
 
-    logger.debug("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board))
 
-    while board[i] contains at least 1 ".":
-        logger.critical("**********************************************************************")
-        logger.warning("Find the missing digits in each row of the Sudoku board")
-        # Creates a list of lists
-        missing_digits_rows = find_missing_digits(board)
-        logger.warning(
-            "Transpose rows into columns so that we can find the missing digits in each column of the Sudoku board")
-        change_rows_to_columns = transpose_rows_to_columns(board)
-        logger.warning("Find the missing digits in each column of the Sudoku board")
-        missing_digits_columns = find_missing_digits(change_rows_to_columns)
-        change_grid_to_rows = create_lists_for_grids(board, change_rows_to_columns)
-        missing_digits_grid = find_missing_digits(change_grid_to_rows)
-        test_digits(board, missing_digits_rows, missing_digits_columns, missing_digits_grid)
-
-        logger.debug("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board))
