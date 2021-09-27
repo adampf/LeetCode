@@ -25,6 +25,13 @@ It is guaranteed that the input board has only one solution.
 Do not return anything, modify board in-place instead.
 '''
 
+board = [[".", ".", "9", "7", "4", "8", ".", ".", "."], ["7", ".", ".", ".", ".", ".", ".", ".", "."],
+         [".", "2", ".", "1", ".", "9", ".", ".", "."], [".", ".", "7", ".", ".", ".", "2", "4", "."],
+         [".", "6", "4", ".", "1", ".", "5", "9", "."], [".", "9", "8", ".", ".", ".", "3", ".", "."],
+         [".", ".", ".", "8", ".", "3", ".", "2", "."], [".", ".", ".", ".", ".", ".", ".", ".", "6"],
+         [".", ".", ".", "2", "7", "5", "9", ".", "."]]
+
+
 class LC_37():
 
     # board = [["5", "3", ".", ".", "7", ".", ".", ".", "."], ["6", ".", ".", "1", "9", "5", ".", ".", "."],
@@ -33,7 +40,7 @@ class LC_37():
     #          [".", "6", ".", ".", ".", ".", "2", "8", "."], [".", ".", ".", "4", "1", "9", ".", ".", "5"],
     #          [".", ".", ".", ".", "8", ".", ".", "7", "9"]]
 
-    board = [[".",".","9","7","4","8",".",".","."],["7",".",".",".",".",".",".",".","."],[".","2",".","1",".","9",".",".","."],[".",".","7",".",".",".","2","4","."],[".","6","4",".","1",".","5","9","."],[".","9","8",".",".",".","3",".","."],[".",".",".","8",".","3",".","2","."],[".",".",".",".",".",".",".",".","6"],[".",".",".","2","7","5","9",".","."]]
+    # board = [[".",".","9","7","4","8",".",".","."],["7",".",".",".",".",".",".",".","."],[".","2",".","1",".","9",".",".","."],[".",".","7",".",".",".","2","4","."],[".","6","4",".","1",".","5","9","."],[".","9","8",".",".",".","3",".","."],[".",".",".","8",".","3",".","2","."],[".",".",".",".",".",".",".",".","6"],[".",".",".","2","7","5","9",".","."]]
     # modified board 1 line above this with where it stalled out
     # board = [[".",".","9","7","4","8",".",".","."],["7",".",".","6",".","2",".",".","."],[".","2",".","1",".","9",".",".","."],[".",".","7","9","8","6","2","4","1"],["2","6","4","3","1","7","5","9","8"],["1","9","8","5","2","4","3","6","7"],[".",".",".","8","6","3",".","2","."],[".",".",".","4","9","1",".",".","6"],[".",".",".","2","7","5","9",".","."]]
 
@@ -171,6 +178,7 @@ class LC_37():
         missing_from_column = False
         missing_from_grid = False
 
+        # Debug the top level for loop only if you want to see the digits get populated throughout the 'potential_solutions' LIST
         for x in range(9):
             for y in range(9):
                 '''
@@ -189,9 +197,9 @@ class LC_37():
                         # this means we are in gridnum 1, 2, or 3
                         if 1 <= j + 1 <= 3:
                             gridnum = 1
-                        if 4 <= j + 1 <= 6:
+                        elif 4 <= j + 1 <= 6:
                             gridnum = 2
-                        if 7 <= j + 1 <= 9:
+                        elif 7 <= j + 1 <= 9:
                             gridnum = 3
                     elif 4 <= i + 1 <= 6:
                         # this means we are in gridnum 4, 5, or 6
@@ -262,7 +270,7 @@ class LC_37():
         for w in potential_solutions:
             if len(w) == 1:
                 # This would mean there is only one solution for the given cell
-                logger.info("We can fill in the empty cell {} with the value {}".format(potential_solutions.index(w)+1, w))
+                logger.warning("We can fill in the empty cell {} with the value {}".format(potential_solutions.index(w)+1, w))
                 # Append value to board
                 board_row = (potential_solutions.index(w) + 1) / 9
                 board_row = math.ceil((potential_solutions.index(w)+1) / 9)
@@ -274,46 +282,85 @@ class LC_37():
                 logger.warning("Replacing the empty value in row {} column {} with a {}".format(board_row, board_column, w[0]))
                 board[board_row - 1][board_column - 1] = w[0]
                 count_changes += 1
-        logger.info("{} changes were made this round".format(count_changes))
+        logger.debug("{} changes were made this round".format(count_changes))
 
         return board, count_changes
 
-    b = 0
-    for row in board:
-        while "." in row:
-            old_board = board
-            # logger.critical("old board is {}".format("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board)))
-            logger.critical("\n" + "Cycle #{} - Currently, the board is:".format(b+1) + "\n" + "\n".join(str(h) for h in old_board))
-            logger.warning("Begin finding the missing digits in each ROW of the Sudoku board:")
-            missing_digits_rows = find_missing_digits(board)
-            logger.warning(
-                "Transpose rows into columns so that we can find the missing digits in each column of the Sudoku board")
-            change_rows_to_columns = transpose_rows_to_columns(board)
-            logger.warning("Begin finding the missing digits in each COLUMN of the Sudoku board:")
-            missing_digits_columns = find_missing_digits(change_rows_to_columns)
-            change_grid_to_rows = create_lists_for_grids(board, change_rows_to_columns)
-            logger.warning("Begin finding the missing digits in each 3x3 GRID of the Sudoku board:")
-            missing_digits_grid = find_missing_digits(change_grid_to_rows)
-            listtest = test_digits(board, missing_digits_rows, missing_digits_columns, missing_digits_grid)
-            new_board = listtest[0]
-            count_digits = listtest[1]
-            if count_digits == 0:
-                logger.critical("********************No changes were made this cycle, so we are stopping the WHILE loop********************")
-                return
+    def check_changes(self, board):
 
-            logger.debug("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in new_board))
-            b += 1
-            logger.warning("Loop has run {} time(s)".format(b))
+        b = 0
+        for row in board:
+            while "." in row:
+                old_board = board
+                # count_digits = 0
+                # logger.critical("old board is {}".format("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board)))
+                logger.critical("\n" + "Cycle #{} - Currently, the board is:".format(b + 1) + "\n" + "\n".join(
+                    str(h) for h in old_board))
 
-            # https://stackoverflow.com/questions/14914615/in-python-find-out-number-of-differences-between-two-ordered-lists
-            # logger.critical("new board is {}".format(message))
-            # logger.critical("newwwwwww board is {}".format((sum(1 for i, j in zip(old_board[0], board[0]) if i != j))))
+                logger.warning("Begin finding the missing digits in each ROW of the Sudoku board:")
+                # asdfasdf = LC_37.find_missing_digits(board)
+                missing_digits_rows = LC_37.find_missing_digits(board)
+                logger.warning(
+                    "Transpose rows into columns so that we can find the missing digits in each column of the Sudoku board")
+                change_rows_to_columns = LC_37.transpose_rows_to_columns(board)
 
-            logger.critical("*************END************")
-    # sum(1 for i, j in zip(a, b) if i != j)
+                logger.warning("Begin finding the missing digits in each COLUMN of the Sudoku board:")
+                missing_digits_columns = LC_37.find_missing_digits(change_rows_to_columns)
+                change_grid_to_rows = LC_37.create_lists_for_grids(board, change_rows_to_columns)
 
-    # logger.critical(board)
-    # logger.critical("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board))
+                logger.warning("Begin finding the missing digits in each 3x3 GRID of the Sudoku board:")
+                missing_digits_grid = LC_37.find_missing_digits(change_grid_to_rows)
+                listtest = LC_37.test_digits(board, missing_digits_rows, missing_digits_columns, missing_digits_grid)
+
+                new_board = listtest[0]
+                count_digits = listtest[1]
+
+                if count_digits == 0:
+                    logger.critical(
+                        "********************No changes were made this cycle, so we are stopping the WHILE loop********************")
+                    return missing_digits_rows, missing_digits_columns, missing_digits_grid
+
+                logger.debug("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in new_board))
+                b += 1
+                logger.warning("Loop has run {} time(s)".format(b))
+
+                # https://stackoverflow.com/questions/14914615/in-python-find-out-number-of-differences-between-two-ordered-lists
+                # logger.critical("new board is {}".format(message))
+                # logger.critical("newwwwwww board is {}".format((sum(1 for i, j in zip(old_board[0], board[0]) if i != j))))
+
+                logger.critical("*************END************")
+
+        return missing_digits_rows, missing_digits_columns, missing_digits_grid
+
+    # if we start using this method, this means our logic that solves some puzzles did not solve all puzzles
+    def find_single_cells(self, missing_digits_rows, missing_digits_columns, missing_digits_grid):
+
+        i = 0
+        j = 0
+        rows_in_grid = 3
+        columns_in_grid = 3
+
+        # check to see if there is only one cell in each 3x3 grid that can legally have a digit
+        for gridnum in range(9):
+            # We can optimize this later to only iterate through the empty cells rather than all 9 cells
+            for cell in range(9):
+                for digit in missing_digits_grid:
+                    # If the cell is blank, AND digit is not in the row, or column already
+                    if board[i][j] == ".":
+                        # if digit
+                        break
+
+
+testclass = LC_37()
+everything = LC_37.check_changes(testclass, board)
+logger.critical(everything)
+missing_digits_in_rows = everything[0]
+missing_digits_in_columns = everything[1]
+missing_digits_in_grid = everything[2]
+# logger.debug(missing_digits_in_rows)
+# logger.debug(missing_digits_in_columns)
+# logger.debug(missing_digits_in_grid)
+LC_37.find_single_cells(testclass, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid)
 
     # TODO: Above code stalled out --- need to account for grids where a digit can only live in one of the 9 spots..
 
