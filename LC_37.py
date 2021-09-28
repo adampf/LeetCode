@@ -318,7 +318,9 @@ class LC_37():
                 if count_digits == 0:
                     logger.critical(
                         "********************No changes were made this cycle, so we are stopping the WHILE loop********************")
-                    return missing_digits_rows, missing_digits_columns, missing_digits_grid
+                    logger.debug("\n" + "THE BOARD WILL REMAIN AS BEFORE:".format(b + 1) + "\n" + "\n".join(
+                        str(h) for h in old_board))
+                    return missing_digits_rows, missing_digits_columns, missing_digits_grid, change_grid_to_rows
 
                 logger.debug("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in new_board))
                 b += 1
@@ -330,39 +332,137 @@ class LC_37():
 
                 logger.critical("*************END************")
 
-        return missing_digits_rows, missing_digits_columns, missing_digits_grid
+        return missing_digits_rows, missing_digits_columns, missing_digits_grid, change_grid_to_rows
 
     # if we start using this method, this means our logic that solves some puzzles did not solve all puzzles
-    def find_single_cells(self, missing_digits_rows, missing_digits_columns, missing_digits_grid):
+    def find_single_cells(self, missing_digits_rows, missing_digits_columns, missing_digits_grid, grid_to_rows):
 
         i = 0
         j = 0
+        k = 0       # Refers to the position in the new 'single cells' List of Lists
+        v = 0
         rows_in_grid = 3
         columns_in_grid = 3
+        single_cells = [[] for i in range(9)]
+        descend_row = 0
+        grid_num = 1
 
-        # check to see if there is only one cell in each 3x3 grid that can legally have a digit
-        for gridnum in range(9):
-            # We can optimize this later to only iterate through the empty cells rather than all 9 cells
-            for cell in range(9):
-                for digit in missing_digits_grid:
-                    # If the cell is blank, AND digit is not in the row, or column already
-                    if board[i][j] == ".":
-                        # if digit
+        logger.debug("Missing digits in each row: {}".format(missing_digits_rows))
+        logger.debug("Missing digits in each column: {}".format(missing_digits_columns))
+        logger.debug("Missing digits in each grid: {}".format(missing_digits_grid))
+        logger.debug("Each grid's values: {}".format(grid_to_rows))
+
+        # For each grid represented in grid_to_rows
+        for grid in grid_to_rows:
+
+            if grid_num % 3 == 1:
+                j = 0
+                if grid_num == 1:
+                    i = 0
+                if grid_num == 4:
+                    i = 3
+                if grid_num == 7:
+                    i = 6
+            # grid num 2, 5, 8
+            elif grid_num % 3 == 2:
+                j = 3
+                if grid_num == 2:
+                    i = 0
+                if grid_num == 5:
+                    i = 3
+                if grid_num == 8:
+                    i = 6
+            # grid num 3, 6, 9
+            elif grid_num % 3 == 0:
+                j = 6
+                if grid_num == 3:
+                    i = 0
+                if grid_num == 6:
+                    i = 3
+                if grid_num == 9:
+                    i = 6
+
+            # For each element in the row of grid_to_rows
+            for cell_value in grid:
+                # for descend_row in range(3):
+                if cell_value == ".":
+                    for element in missing_digits_grid[v]:
+                        if element in missing_digits_rows[i] and element in missing_digits_columns[j]:
+                            single_cells[k].append(element)
+                    j += 1
+                else:
+                    single_cells[k].append("---")
+                    j += 1
+                descend_row += 1
+                k += 1
+                if descend_row % 3 == 0:
+                    i += 1
+                    j = 0
+            v += 1
+            k = 0
+            digits_to_verify = []
+            # TODO: Now must go through 'single_cells' and see how many instances of each digit occur. If only 1, then that digit has to be the answer
+            for check_digit in range(1, 10):
+                if str(check_digit) not in grid:
+                    digits_to_verify.append(check_digit)
+
+            tempcount = 0
+            append_to_board = []
+            close_flag = False
+
+            # iterates through the numbers that have not yet been placed on grid number "grid_num"
+            for now_check_digit in digits_to_verify:
+                # iterates through the positions of grid number "grid_num"
+                for singlecell in single_cells:
+                    tempcount = tempcount + singlecell.count(now_check_digit)
+                    if tempcount > 1:
+                        tempcount = 0
+                        # logger.warning("More than 1 possibility for digit {}".format(now_check_digit))
                         break
+                if tempcount == 1:
+                    logger.critical("WE HAVE A WINNER")
+                    for find_winner in single_cells:
+                        if now_check_digit in find_winner:
+                            logger.critical("The digit we get to insert is: {} at position {}".format(now_check_digit,
+                                                          ((grid_num-1) * 9) + single_cells.index(find_winner) + 1))
+                            # logger.critical("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board))
+                            append_to_board.append(now_check_digit)
+                            append_to_board.append(((grid_num-1) * 9) + single_cells.index(find_winner) + 1)
+                            close_flag = True
 
+                            break
+                    else:
+                        continue
+            if close_flag == True:
+                return append_to_board
+
+            # Before moving on to the next grid, check to see if any values in
+            for check_singles in single_cells:
+                if len(check_singles) == 1 and check_singles[0] != "---":
+                    # We want to append this value to the main board
+                    logger.critical("WRITE CODE TO ADD THIS VALUE TO THE CORRECT SPOT ON THE BOARD")
+            logger.debug("Completed verifying digits with one home in 3x3 Grid #{}".format(v))
+
+            single_cells = [[] for i in range(9)]
+            grid_num += 1
 
 testclass = LC_37()
 everything = LC_37.check_changes(testclass, board)
-logger.critical(everything)
+# logger.critical(everything)
+
 missing_digits_in_rows = everything[0]
 missing_digits_in_columns = everything[1]
 missing_digits_in_grid = everything[2]
+grid_to_rows = everything[3]
+
 # logger.debug(missing_digits_in_rows)
 # logger.debug(missing_digits_in_columns)
 # logger.debug(missing_digits_in_grid)
-LC_37.find_single_cells(testclass, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid)
+append_to_board = LC_37.find_single_cells(testclass, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid, grid_to_rows)
 
-    # TODO: Above code stalled out --- need to account for grids where a digit can only live in one of the 9 spots..
+# TODO: Once the above values are appended to the board, then run the main logic again (hopefully this will solve the issues)
+final_board = LC_37.check_changes(testclass, board)
+logger.critical(final_board)
 
     # TODO: Is there something we can do with the information of "X digit CANNOT live in row..." ?
 
