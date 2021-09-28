@@ -313,7 +313,7 @@ class LC_37():
                 listtest = LC_37.test_digits(board, missing_digits_rows, missing_digits_columns, missing_digits_grid)
 
                 new_board = listtest[0]
-                count_digits = listtest[1]
+                count_digits = listtest[1]  # number of digits that were modified
 
                 if count_digits == 0:
                     logger.critical(
@@ -407,8 +407,9 @@ class LC_37():
                     digits_to_verify.append(check_digit)
 
             tempcount = 0
-            append_to_board = []
+            append_to_board = [[] for i in range(9)]
             close_flag = False
+            t = 0
 
             # iterates through the numbers that have not yet been placed on grid number "grid_num"
             for now_check_digit in digits_to_verify:
@@ -423,17 +424,73 @@ class LC_37():
                     logger.critical("WE HAVE A WINNER")
                     for find_winner in single_cells:
                         if now_check_digit in find_winner:
+                            element_position_within_grid = single_cells.index(find_winner)
+
+                            position_number = ((grid_num - 1) * 9) + single_cells.index(find_winner) + 1
                             logger.critical("The digit we get to insert is: {} at position {}".format(now_check_digit,
-                                                          ((grid_num-1) * 9) + single_cells.index(find_winner) + 1))
-                            # logger.critical("\n" + "New board value is:" + "\n" + "\n".join(str(h) for h in board))
-                            append_to_board.append(now_check_digit)
-                            append_to_board.append(((grid_num-1) * 9) + single_cells.index(find_winner) + 1)
+                                                          position_number))
+                            logger.critical("The position within grid # {} is {}".format(grid_num, element_position_within_grid))
+
+                            # formula from Discord conversation is:
+                            # x = row = (row position in the subgrid + (row position in the 3x3 main grid * 3)) + 1
+                            # y = column = (column position in the 3x3 subgrid + (column position in the 3x3 main grid * 3)) + 1
+
+                            # for 74
+                            # x = row = (0 + (2 * 3)) + 1 = 7
+                            # y = column = (1 + (2 * 3)) + 1 = 8
+
+                            # For 43:
+                            # x = row = (2 + (1 * 3)) + 1 = 6
+                            # y = column = (0 + (1 * 3)) + 1 = 4
+
+                            if 0 <= element_position_within_grid <= 2:
+                                subgrid_row = 0
+                            elif 3 <= element_position_within_grid <= 5:
+                                subgrid_row = 1
+                            elif 6 <= element_position_within_grid <= 8:
+                                subgrid_row = 2
+
+                            if element_position_within_grid % 3 == 0:
+                                subgrid_column = 0
+                            elif element_position_within_grid % 3 == 1:
+                                subgrid_column = 1
+                            elif element_position_within_grid % 3 == 2:
+                                subgrid_column = 2
+
+                            if 1 <= grid_num <= 3:
+                                maingrid_row = 0
+                            elif 4 <= grid_num <= 6:
+                                maingrid_row = 1
+                            elif 7 <= grid_num <= 9:
+                                maingrid_row = 2
+
+                            if grid_num % 3 == 1:
+                                maingrid_column = 0
+                            elif grid_num % 3 == 2:
+                                maingrid_column = 1
+                            elif grid_num % 3 == 0:
+                                maingrid_column = 2
+
+                            position_number_row = (subgrid_row + (maingrid_row * 3)) + 1
+                            position_number_column = (subgrid_column + (maingrid_column * 3)) + 1
+
+                            logger.critical("Row to be modified: {} & Column to be modified: {}".format(position_number_row, position_number_column))
+                            logger.critical(board)
+
+                            append_to_board[t].append(position_number_row)
+                            append_to_board[t].append(position_number_column)
+                            append_to_board[t].append(now_check_digit)
+
                             close_flag = True
+                            t += 1
 
                             break
                     else:
                         continue
             if close_flag == True:
+                # delete the empty lists that were not filled
+                del append_to_board[t:len(append_to_board)]
+
                 return append_to_board
 
             # Before moving on to the next grid, check to see if any values in
@@ -442,6 +499,7 @@ class LC_37():
                     # We want to append this value to the main board
                     logger.critical("WRITE CODE TO ADD THIS VALUE TO THE CORRECT SPOT ON THE BOARD")
             logger.debug("Completed verifying digits with one home in 3x3 Grid #{}".format(v))
+            # descend_row = 0
 
             single_cells = [[] for i in range(9)]
             grid_num += 1
@@ -455,14 +513,88 @@ missing_digits_in_columns = everything[1]
 missing_digits_in_grid = everything[2]
 grid_to_rows = everything[3]
 
-# logger.debug(missing_digits_in_rows)
-# logger.debug(missing_digits_in_columns)
-# logger.debug(missing_digits_in_grid)
 append_to_board = LC_37.find_single_cells(testclass, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid, grid_to_rows)
+logger.critical(append_to_board)
+for appended in append_to_board:
+    logger.warning("\n" + "Before:" + "\n" + "\n".join(
+        str(h) for h in board))
+    logger.warning(board[appended[0]-1][appended[1]-1])
+    logger.warning("Modify row: {}".format(appended[0]))
+    logger.warning("Modify column: {}".format(appended[1]))
+    logger.warning("Insert number: {}".format(appended[2]))
+    board[appended[0] - 1][appended[1] - 1] = str(appended[2])
+    logger.warning("\n" + "After:" + "\n" + "\n".join(
+        str(h) for h in board))
 
-# TODO: Once the above values are appended to the board, then run the main logic again (hopefully this will solve the issues)
-final_board = LC_37.check_changes(testclass, board)
-logger.critical(final_board)
+# TODO: Once the above values are appended to the board, then run the main logic again (hopefully this will solve the stalling)
+remaining_missing_digits = LC_37.check_changes(testclass, board)
+logger.critical(remaining_missing_digits)
+logger.critical(board)
+
+
+
+
+
+########################## FIRST LOGIC ##########################
+testclass = LC_37()
+everything = LC_37.check_changes(testclass, board)
+# logger.critical(everything)
+
+missing_digits_in_rows = everything[0]
+missing_digits_in_columns = everything[1]
+missing_digits_in_grid = everything[2]
+grid_to_rows = everything[3]
+
+
+logger.debug(missing_digits_in_rows)
+logger.debug(missing_digits_in_columns)
+logger.debug(missing_digits_in_grid)
+
+########################## SECOND LOGIC ##########################
+append_to_board = LC_37.find_single_cells(testclass, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid, grid_to_rows)
+logger.critical(append_to_board)
+for appended in append_to_board:
+    logger.warning("\n" + "Before:" + "\n" + "\n".join(
+        str(h) for h in board))
+    logger.warning(board[appended[0]-1][appended[1]-1])
+    logger.warning("Modify row: {}".format(appended[0]))
+    logger.warning("Modify column: {}".format(appended[1]))
+    logger.warning("Insert number: {}".format(appended[2]))
+    board[appended[0] - 1][appended[1] - 1] = str(appended[2])
+    logger.warning("\n" + "After:" + "\n" + "\n".join(
+        str(h) for h in board))
+
+########################## FIRST LOGIC ##########################
+testclass = LC_37()
+everything = LC_37.check_changes(testclass, board)
+# logger.critical(everything)
+
+missing_digits_in_rows = everything[0]
+missing_digits_in_columns = everything[1]
+missing_digits_in_grid = everything[2]
+grid_to_rows = everything[3]
+
+logger.debug(missing_digits_in_rows)
+logger.debug(missing_digits_in_columns)
+logger.debug(missing_digits_in_grid)
+
+########################## SECOND LOGIC ##########################
+append_to_board = LC_37.find_single_cells(testclass, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid, grid_to_rows)
+logger.critical(append_to_board)
+for appended in append_to_board:
+    logger.warning("\n" + "Before:" + "\n" + "\n".join(
+        str(h) for h in board))
+    logger.warning(board[appended[0]-1][appended[1]-1])
+    logger.warning("Modify row: {}".format(appended[0]))
+    logger.warning("Modify column: {}".format(appended[1]))
+    logger.warning("Insert number: {}".format(appended[2]))
+    board[appended[0] - 1][appended[1] - 1] = str(appended[2])
+    logger.warning("\n" + "After:" + "\n" + "\n".join(
+        str(h) for h in board))
+
+
+
+
 
     # TODO: Is there something we can do with the information of "X digit CANNOT live in row..." ?
 
