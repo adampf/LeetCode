@@ -152,7 +152,7 @@ class LC_37():
 
         return grid_elements
 
-    def test_digits(board, missing_digits_rows, missing_digits_columns, missing_digits_grid):
+    def test_digits(board: list, missing_digits_rows, missing_digits_columns, missing_digits_grid):
 
         # find each blank space
         # check if digit 1 exists in the row
@@ -347,9 +347,9 @@ class LC_37():
         descend_row = 0
         grid_num = 1
 
-        logger.debug("Missing digits in each row: {}".format(missing_digits_rows))
-        logger.debug("Missing digits in each column: {}".format(missing_digits_columns))
-        logger.debug("Missing digits in each grid: {}".format(missing_digits_grid))
+        logger.debug("(missing_digits_rows) Missing digits in each row: {}".format(missing_digits_rows))
+        logger.debug("(missing_digits_columns) Missing digits in each column: {}".format(missing_digits_columns))
+        logger.debug("(missing_digits_grid) Missing digits in each grid: {}".format(missing_digits_grid))
         logger.debug("Each grid's values: {}".format(grid_to_rows))
 
         # For each grid represented in grid_to_rows
@@ -397,7 +397,9 @@ class LC_37():
                 k += 1
                 if descend_row % 3 == 0:
                     i += 1
-                    j = 0
+                    # ********************** ALERT THIS WAS THE ORIGINAL J VALUE *************************
+                    # j = 0
+                    j = j - 3
             v += 1
             k = 0
             digits_to_verify = []
@@ -532,9 +534,6 @@ logger.critical(remaining_missing_digits)
 logger.critical(board)
 
 
-
-
-
 ########################## FIRST LOGIC ##########################
 testclass = LC_37()
 everything = LC_37.check_changes(testclass, board)
@@ -544,11 +543,6 @@ missing_digits_in_rows = everything[0]
 missing_digits_in_columns = everything[1]
 missing_digits_in_grid = everything[2]
 grid_to_rows = everything[3]
-
-
-logger.debug(missing_digits_in_rows)
-logger.debug(missing_digits_in_columns)
-logger.debug(missing_digits_in_grid)
 
 ########################## SECOND LOGIC ##########################
 append_to_board = LC_37.find_single_cells(testclass, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid, grid_to_rows)
@@ -574,37 +568,107 @@ missing_digits_in_columns = everything[1]
 missing_digits_in_grid = everything[2]
 grid_to_rows = everything[3]
 
-logger.debug(missing_digits_in_rows)
-logger.debug(missing_digits_in_columns)
-logger.debug(missing_digits_in_grid)
-
 ########################## SECOND LOGIC ##########################
 append_to_board = LC_37.find_single_cells(testclass, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid, grid_to_rows)
 logger.critical(append_to_board)
-for appended in append_to_board:
-    logger.warning("\n" + "Before:" + "\n" + "\n".join(
+
+
+try:
+    for appended in append_to_board:
+        logger.warning("\n" + "Before:" + "\n" + "\n".join(
         str(h) for h in board))
-    logger.warning(board[appended[0]-1][appended[1]-1])
-    logger.warning("Modify row: {}".format(appended[0]))
-    logger.warning("Modify column: {}".format(appended[1]))
-    logger.warning("Insert number: {}".format(appended[2]))
-    board[appended[0] - 1][appended[1] - 1] = str(appended[2])
-    logger.warning("\n" + "After:" + "\n" + "\n".join(
-        str(h) for h in board))
+        logger.warning(board[appended[0]-1][appended[1]-1])
+        logger.warning("Modify row: {}".format(appended[0]))
+        logger.warning("Modify column: {}".format(appended[1]))
+        logger.warning("Insert number: {}".format(appended[2]))
+        board[appended[0] - 1][appended[1] - 1] = str(appended[2])
+        logger.warning("\n" + "After:" + "\n" + "\n".join(str(h) for h in board))
+except Exception:
+    pass
+
+
+#####################################################################
+# https://sudoku9x9.com/howtosolve.php
+'''
+In rows R1, R4 and R8, only cells in columns C1, C2 and C8 may have digit "5" as a candidate. Therefore, within each of 
+these 3 columns, "5" must reside in one of the cells in rows R1, R4 and R8 and cannot be possibilities for cells in other rows.
+'''
+# TODO: Attempt to write logic for the reasoning above ^^^
+
+# log the position of each row for any missing digits in that row
+def cell_possibilities(board, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid):
+
+    possible_solutions = [[] for i in range(81)]
+    i = 0   # indicates the row number of board
+    j = 0   # indicates the column number of board
+    p = 0   # indicates the element within the 'missing' lists I am checking
+    grid_num = 1
+    count = 0   # will be used to keep track of the 81 positions of possibilities
+
+    #TODO: How do you calculate grid_num ?
+
+    # Answer from Discord
+    # grid_num = 3 * (i // 3) + (j // 3) + 1
+
+    # if 1 <= i <= 3:
+    #     if 1 <= j <= 3: grid_num = 1
+    #     if 4 <= j <= 6: grid_num = 2
+    #     if 7 <= j <= 9: grid_num = 3
+    # if 4 <= i <= 6:
+    #     if 1 <= j <= 3: grid_num = 4
+    #     if 4 <= j <= 6: grid_num = 5
+    #     if 7 <= j <= 9: grid_num = 6
+    # if 7 <= i <= 9:
+    #     if 1 <= j <= 3: grid_num = 7
+    #     if 4 <= j <= 6: grid_num = 8
+    #     if 7 <= j <= 9: grid_num = 9
+
+    # Add all valid possibilities to the cell
+    for rows in board:
+        # Check rows
+        for missing in missing_digits_in_rows:
+
+            for y in range(9):
+                grid_num = 3 * (i // 3) + (j // 3) + 1
+                logger.debug(
+                    "Currently checking missing {} in row {} column {} in grid {}".format(missing, i + 1, j + 1, grid_num))
+
+                for x in range(len(missing)):
+
+                    if rows[j] != '.':
+                        logger.info("row {} column {} in grid {} is already filled in".format(i + 1, j + 1, grid_num))
+                        possible_solutions[count].append("Full")
+                        break
+
+                    miss = missing[p]
+                    col = missing_digits_in_columns[j]
+                    grid = missing_digits_in_grid[grid_num-1]
+
+                    if miss in col and missing[p] in grid:
+                        possible_solutions[count].append(missing[p])
+
+                    p += 1
+                logger.warning(
+                    "Finished filling in missing values for row {} column {} in grid {}".format(i + 1, j + 1, grid_num))
+                p = 0
+                count += 1
+                j += 1
+
+            j = 0
+            i += 1
+        if i >= 9:
+            break
+    logger.debug("All possible solutions filled in: {}".format(possible_solutions))
+
+
+cell_possibilities(board, missing_digits_in_rows, missing_digits_in_columns, missing_digits_in_grid)
+logger.debug(board)
+logger.critical("\n" + "Currently, the board is:" + "\n" + "\n".join(
+                    str(h) for h in board))
 
 
 
 
-
-    # TODO: Is there something we can do with the information of "X digit CANNOT live in row..." ?
-
-    # TODO: Calculate the number that the missing digits of each row must add up to equal
-    # def sum_row_value(self):
-        # In the case of a 9x9, that number is 45
-
-    # TODO: Calculate the number that the missing digits of each column must add up to equal
-    # def sum_column_value(self):
-        # In the case of a 9x9, that number is 45
 
 
 
