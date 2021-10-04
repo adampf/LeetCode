@@ -96,7 +96,7 @@ class LC_37():
 
         return transposed
 
-    #TODO: We have finished printing board as rows / columns as well as finding missing values for rows and columns, but now we must do the same for grids
+    # Same format as 'board', but each list is the board's grids instead of the board's rows
     def transform_rows_to_grids(rows):
 
         grids = [[] for i in range(9)]
@@ -139,11 +139,15 @@ class LC_37():
         possible_solutions = [[[] for i in range(9)] for j in range(9)]
 
         while i < 9:
+            # j = 0 ###########!!!!!!!!!!!!!!!!!!!!!!!!!#################################******************#######################
             if len(missing_from_rows[i]) == 0:
                 i += 1
             else:
                 logger.critical("ROW'S missing digits we are checking:    {}".format(missing_from_rows[i]))  ####################################################################################
                 for y in range(len(missing_from_rows[i])):
+
+                    if len(missing_from_rows[i]) == 0:
+                        break
 
                     grid_num = 3 * (i // 3) + (j // 3) + 1
 
@@ -175,7 +179,7 @@ class LC_37():
 
                         # Checks to make sure we are not trying to test more numbers than are missing from the row
                         if k < len(missing_from_rows[i])-1:
-                            logger.debug("Check the next number at board[{}][{}]".format(i, j))
+                            # logger.debug("Check the next number at board[{}][{}]".format(i, j)) ###########################################
                             k += 1
                         # But if we are, then reset k, and move over one column
                         else:
@@ -205,6 +209,7 @@ class LC_37():
 
         return possible_solutions
 
+    # searches for cells that can only have one possible value: len == 1
     def find_single_solutions(possible_solutions):
 
         row = 1
@@ -228,6 +233,7 @@ class LC_37():
 
         return append1
 
+    # takes list of lists from find_single_solutions() and enters them into the board
     def modify_board(board, append_values):
 
         for x in append_values:
@@ -235,6 +241,8 @@ class LC_37():
 
         return board
 
+    # TODO: Right now this only returns one value at a time which is proving to be very ineffecient
+    # TODO: Can we structure multiple values similar to find_single_solutions() and then send it to modify_board ?
     # This method identifies numbers per row that can only live in one cell
     def find_single_options(possible_solutions, missing_from_rows, board):
 
@@ -242,30 +250,49 @@ class LC_37():
         row_count = 0
         column_count = 0
 
-        # TODO: The issue seems to be that y is not looping in tandem with x like it should be. Do we need to take y out of a for loop?
-
         for x in possible_solutions:
-            for y in missing_from_rows:
-                for z in y:
-                    for t in x:
-                        if z in t:
-                            frequency_count += 1
-                            column_identifier = column_count
-                            if frequency_count > 1:
-                                logger.debug("The value {} could live in multiple cells of the row".format(z))
-                                logger.debug("Moving onto the next digit missing from the row")
-                                frequency_count = 0
-                                column_count += 1
-                                break
-                        column_count += 1
-                    if frequency_count == 1:
-                        logger.debug("Appending the value {} to board[{}][{}]".format(z, row_count, column_count - 1))
-                        board[row_count][column_count - 1] = str(z)
-                        # column_identifier = 0 ----------- only need this if we get rid of the return statement
-                        return board
-                    column_count = 0
-                    column_identifier = 0
+            row_missing = missing_from_rows[row_count]
+            for z in row_missing:
+                for t in x:
+                    if z in t:
+                        frequency_count += 1
+                        column_identifier = column_count
+                        if frequency_count > 1:
+                            logger.debug("The value {} could live in multiple cells of the row".format(z))
+                            logger.debug("Moving onto the next digit missing from the row")
+                            frequency_count = 0
+                            column_count += 1
+                            break
+                    column_count += 1
+                if frequency_count == 1:
+                    logger.debug("Appending the value {} to board[{}][{}]".format(z, row_count, column_identifier))
+                    board[row_count][column_identifier] = str(z)
+
+                    return board
+                column_count = 0
+                column_identifier = 0
             row_count += 1
+
+        # row = 1
+        # column = 1
+        #
+        # append1 = []
+        # append2 = []
+        #
+        # while row <= 9:
+        #     for x in possible_solutions:
+        #         for y in x:
+        #             if len(y) == 1:
+        #                 append2.append(y[0])
+        #                 append2.append(row)
+        #                 append2.append(column)
+        #                 append1.append(append2)
+        #                 append2 = []
+        #             column += 1
+        #         row += 1
+        #         column = 1
+        #
+        # return append1
 
         return board
 
@@ -275,12 +302,15 @@ class LC_37():
     # TODO: Now we can go through and append values for the 'possible_solutions' with length 1
 
     loop_check = 0
+    loop_counter = 0
 
     logger.warning("\n" + "Board to be solved is:" + "\n" + "\n".join(str(h) for h in board))
     num_blanks = count_board_blanks(board)
     logger.debug("The board currently has {} blanks".format(num_blanks))
 
     while num_blanks > 0:
+
+        logger.warning("Loops so far: {}".format(loop_counter))
 
         logger.info("Each row is missing the following values:")
         missing_from_rows = find_missing_digits(board)
@@ -294,20 +324,25 @@ class LC_37():
         logger.info("Each grid is missing the following values:")
         missing_from_grids = find_missing_digits(grids_as_rows)
         possible_solutions = possible_values(board, columns_as_rows, grids_as_rows, missing_from_rows, missing_from_columns, missing_from_grids)
-        logger.warning("\n" + "1st pass of possible solutions - possible_values evaluates to:" + "\n" + "\n".join(str(h) for h in possible_solutions))
+        logger.warning("\n" + "Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(str(h) for h in possible_solutions))
         append_values = find_single_solutions(possible_solutions)
         logger.debug("New values to append to the main board (value, row, column): {}".format(append_values))
         updated_board = modify_board(board, append_values)
         logger.info("\n" + "Board has been updated as follows:" + "\n" + "\n".join(str(h) for h in updated_board))
         num_blanks = count_board_blanks(board)
         logger.debug("The board currently has {} blanks".format(num_blanks))
+        single_options = find_single_options(possible_solutions, missing_from_rows, board)
+        logger.info("\n" + "Board has been updated as follows:" + "\n" + "\n".join(str(h) for h in board))
+
         # If true, then this means the loop did not solve for any additional spaces, and therefore would be an infinite loop we need to break
         if num_blanks == loop_check:
             break
         loop_check = num_blanks
-        find_single_options(possible_solutions, missing_from_rows, board)
+        loop_counter += 1
 
-    logger.info("\n" + "Board has been updated as follows:" + "\n" + "\n".join(str(h) for h in board))
+    logger.info("\n" + "FINAL board after {} loops:".format(loop_counter) + "\n" + "\n".join(str(h) for h in board))
+    logger.warning("\n" + "Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(str(h) for h in possible_solutions))
+
 
 
 
