@@ -40,7 +40,7 @@ board = [[".", ".", "9", "7", "4", "8", ".", ".", "."], ["7", ".", ".", ".", "."
          [".", ".", ".", "2", "7", "5", "9", ".", "."]]
 
 
-class LC_37():
+class LC_37_refactor():
 
     # This counts the number of cells that are blank on the board
     def count_board_blanks(board):
@@ -241,8 +241,6 @@ class LC_37():
 
         return board
 
-    # TODO: Right now this only returns one value at a time which is proving to be very ineffecient
-    # TODO: Can we structure multiple values similar to find_single_solutions() and then send it to modify_board ?
     # This method identifies numbers per row that can only live in one cell
     def find_single_options(possible_solutions, missing_from_rows, board):
 
@@ -267,34 +265,203 @@ class LC_37():
                 if frequency_count == 1:
                     logger.debug("Appending the value {} to board[{}][{}]".format(z, row_count, column_identifier))
                     board[row_count][column_identifier] = str(z)
+                    column_count = 0
+                    column_identifier = 0
+                    break
 
-                    return board
+                    # return board
                 column_count = 0
                 column_identifier = 0
             row_count += 1
 
-        # row = 1
-        # column = 1
-        #
-        # append1 = []
-        # append2 = []
-        #
-        # while row <= 9:
-        #     for x in possible_solutions:
-        #         for y in x:
-        #             if len(y) == 1:
-        #                 append2.append(y[0])
-        #                 append2.append(row)
-        #                 append2.append(column)
-        #                 append1.append(append2)
-        #                 append2 = []
-        #             column += 1
-        #         row += 1
-        #         column = 1
-        #
-        # return append1
-
         return board
+
+    # TODO: It's currently working for grids. Now need to make it work for columns and rows
+    def find_two_pairs_grid(possible_solutions_grids, missing_from_grids):
+
+        # for x, element in enumerate(missing_from_grids):
+        #     logger.debug("{}, {}".format(x, element))
+
+        # check rows, columns and grids
+        # if row has 4 or more open cells
+        # then check for frequency of digits in those cells
+        # if 2 or more digits have a frequency == 2
+        # then run 4/8 logic
+
+        # happy path is grid #1 so we will hardcode this scenario first
+        temp2 = []
+        #TODO: Make this dynamic instead of static
+        grid_num = 1
+
+        for x in missing_from_grids[0]:
+            position = 0
+            temp3 = []
+
+            for y in possible_solutions_grids[0]:
+                # logger.debug("Looking for digit {} in {}".format(x, y))
+                position += 1
+
+                if x in y:
+                    # count += 1
+                    temp3.append([x, position-1])
+
+                if len(temp3) > 2:
+                    break
+            if len(temp3) == 2:
+                # temp.append(x)
+                temp2.append(temp3)
+
+        # Now temp[] contains all of the digits that have a frequency of 2
+        # TODO: Double check this logic when debugging
+        if len(temp2) != 2:
+            # move onto the next row / column / grid
+            logger.debug("aslkfjlksdjf")
+        else:
+            logger.info("value/position {}".format(temp2))
+
+            # remove all possible values except for what is found in temp2
+            possible_solutions_grids[0][temp2[0][0][1]] = [temp2[0][0][0], temp2[1][0][0]]
+            possible_solutions_grids[0][temp2[0][1][1]] = [temp2[0][0][0], temp2[1][0][0]]
+            logger.debug(possible_solutions_grids[0])
+            logger.debug("\n" + "GRIDS --- Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(
+                str(h) for h in possible_solutions_grids))
+
+        # if this code was being run on a grid, then we have to transform the result back into the row format
+
+        # possible_solutions =
+
+        return possible_solutions_grids
+
+    # def find_two_pairs_row(possible_solutions, missing_from_rows):
+
+    # def find_two_pairs_column(possible_solutions, missing_from_columns):
+
+    def find_digit_three_rows(missing_from_rows, possible_solutions):
+
+        # for x, element in enumerate(missing_from_grids):
+        #     logger.debug("{}, {}".format(x, element))
+
+        # check rows, columns and grids
+        # if row has 4 or more open cells
+        # then check for frequency of digits in those cells
+        # if 2 or more digits have a frequency == 2
+        # then run 4/8 logic
+
+        # happy path is grid #1 so we will hardcode this scenario first
+        subgrid1 = []
+        subgrid2 = []
+        subgrid3 = []
+        # TODO: Make this dynamic instead of static
+        grid_num = 1
+        row1 = 0
+        row2 = 3
+        row3 = 7
+
+        logger.info("\n" + "Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(str(h)
+                                        for h in missing_from_rows))
+
+        for x in missing_from_rows[row1]:
+            position = 0
+            temp_subgrid1 = []
+
+            for y in possible_solutions[row1]:
+                # logger.debug("Looking for digit {} in {}".format(x, y))
+                position += 1
+
+                if x in y:
+                    # count += 1
+                    temp_subgrid1.append([x, position - 1])
+
+                if len(temp_subgrid1) > 3:
+                    break
+            if len(temp_subgrid1) == 3:
+                # temp.append(x)
+                subgrid1.append(temp_subgrid1)
+
+        for x in missing_from_rows[row2]:
+            position = 0
+            temp_subgrid2 = []
+
+            for y in possible_solutions[row2]:
+                # logger.debug("Looking for digit {} in {}".format(x, y))
+                position += 1
+
+                if x in y:
+                    # count += 1
+                    temp_subgrid2.append([x, position - 1])
+
+                if len(temp_subgrid2) > 3:
+                    break
+            # TODO: hardcoded 2 for the specific use case, would need to change systematically
+            if len(temp_subgrid2) == 2:
+                # temp.append(x)
+                subgrid2.append(temp_subgrid2)
+
+        for x in missing_from_rows[row3]:
+            position = 0
+            temp_subgrid3 = []
+
+            for y in possible_solutions[row3]:
+                # logger.debug("Looking for digit {} in {}".format(x, y))
+                position += 1
+
+                if x in y:
+                    # count += 1
+                    temp_subgrid3.append([x, position - 1])
+
+                if len(temp_subgrid3) > 3:
+                    break
+
+            if len(temp_subgrid3) == 3:
+                # temp.append(x)
+                subgrid3.append(temp_subgrid3)
+
+        logger.debug(subgrid1)
+        logger.debug(subgrid2)
+        logger.debug(subgrid3)
+
+        temp1 = []
+        for x in subgrid1:
+            if x[0][0] == 5:
+                temp1.append(x[0][1])
+                temp1.append(x[1][1])
+                temp1.append(x[2][1])
+
+        temp2 = []
+        for x in subgrid2:
+            if x[0][0] == 5:
+                temp2.append(x[0][1])
+                temp2.append(x[1][1])
+                # TODO: Comment back in for systematic approach
+                # temp2.append(x[2][1])
+
+        temp3 = []
+        for x in subgrid3:
+            if x[0][0] == 5:
+                temp3.append(x[0][1])
+                temp3.append(x[1][1])
+                temp3.append(x[2][1])
+
+        # This means 5 has to live in column 1, 2, 8
+        # So any other cells that have 5 as a possibility within column 1, 2, 8 it needs to be removed
+
+        counter_row = 0
+        counter_column = 0
+        for x in possible_solutions:
+            # if
+            if 5 in x[0] and counter_row not in (0, 3, 7):
+                x[0].remove(5)
+            if 5 in x[1] and counter_row not in (0, 3, 7):
+                x[1].remove(5)
+            if 5 in x[7] and counter_row not in (0, 3, 7):
+                x[7].remove(5)
+
+            counter_row += 1
+
+        logger.info("\n" + "Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(str(h)
+                                        for h in possible_solutions))
+
+        return possible_solutions
 
     # TODO: Currently, we have functions to generate rows, columns, and grids, as well as their missing values \
     # TODO: cont.. of each element of those 3. We can also check each cell in the board to see what values
@@ -334,14 +501,165 @@ class LC_37():
         single_options = find_single_options(possible_solutions, missing_from_rows, board)
         logger.info("\n" + "Board has been updated as follows:" + "\n" + "\n".join(str(h) for h in board))
 
+        # #TODO: I don't think this new possible solutions board is being utilized because of the possible solutions
+        # # TODO: definition above ^^^^^^^^^
+        # # ***************************
+        possible_solutions_grids = transform_rows_to_grids(possible_solutions)
+        # logger.debug("\n" + "GRIDS --- Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(
+        #     str(h) for h in possible_solutions_grids))
+        #
+        # two_pairs_grid = find_two_pairs_grid(possible_solutions_grids, missing_from_grids)
+        #
+        # logger.info("\n" + "Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(str(h)
+        #                         for h in transform_rows_to_grids(two_pairs_grid)))
+        # # ***************************
+
+        # possible_solutions = transform_rows_to_grids(two_pairs_grid)
+
+
         # If true, then this means the loop did not solve for any additional spaces, and therefore would be an infinite loop we need to break
         if num_blanks == loop_check:
             break
         loop_check = num_blanks
         loop_counter += 1
 
-    logger.info("\n" + "FINAL board after {} loops:".format(loop_counter) + "\n" + "\n".join(str(h) for h in board))
-    logger.warning("\n" + "Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(str(h) for h in possible_solutions))
+    logger.info("\n" + "FINAL board with {} missing values after {} loops:".format(num_blanks, loop_counter) + "\n"
+                + "\n".join(str(h) for h in board))
+
+    # find_digit_three_rows(missing_from_rows, possible_solutions)
+    #
+    # def brute_force(board, possible_solutions):
+    #
+    #     logger.debug("\n" + "current boardddddddd:" + "\n" + "\n".join(str(h) for h in board))
+    #     logger.debug("\n" + "original possible_solutions:" + "\n" + "\n".join(str(h) for h in possible_solutions))
+    #
+    #     # 1) Find a cell with only two possible values
+    #     # 2) Hypothetically use the first value
+    #     # 3) See what is impacted by this
+    #
+    #     # rinse and repeat step 2 through x for the second possible value in the original cell
+    #
+    #     # implement step 1:
+    #     hypothetical = []
+    #
+    #     for x, rows in enumerate(possible_solutions):
+    #         if len(hypothetical) == 2:
+    #             break
+    #         for y, cells in enumerate(rows):
+    #             logger.debug("{}, {}".format(y, cells))
+    #             if len(cells) == 2:
+    #                 logger.debug("row {} column {}".format(x, y))
+    #                 hypothetical = [x, y]
+    #                 break
+    #
+    #     test_board_row = hypothetical[0]
+    #     test_board_column = hypothetical[1]
+    #
+    #     first_test_value = cells[0]
+    #     second_test_value = cells[1]
+    #     logger.debug("The cell we will test is board[{}][{}]".format(test_board_row, test_board_column))
+    #     logger.warning("The values we will test are {} and {}".format(first_test_value, second_test_value))
+    #
+    #     #implement step 2:
+    #     board_first_value = possible_solutions
+    #
+    #     logger.debug("set cell in possible_values to blank")
+    #     board_first_value[test_board_row][test_board_column] = []
+    #
+    #     logger.info("Now testing the first value of {}".format(first_test_value))
+    #     temp_remove_digits = []
+    #     for t, value in enumerate(possible_solutions[test_board_row]):
+    #         if first_test_value in value:
+    #             value.remove(first_test_value)
+    #             temp_remove_digits.append([first_test_value, t])
+    #     logger.warning("Row after removing the first_test_value {}".format(possible_solutions[test_board_row]))
+    #     logger.warning(temp_remove_digits)
+    #
+    #     # LC_37_refactor.find_single_options(possible_solutions, missing_from_rows, board):
+    #     #     logger.debug("asdf")
+    #
+    #
+    #
+    #
+    #     logger.info("Now testing the second value of {}".format(cells[1]))
+    #
+    #
+    #
+    #     logger.debug("\n" + "test_first_value" + "\n" + "\n".join(str(h) for h in board_first_value))
+    #
+    #
+    #     return board
+    #
+    # brute_force(board, possible_solutions)
+
+    def backtracker(board, missing_from_rows, missing_from_columns, missing_from_grids, possible_solutions, possible_solutions_grids):
+
+        logger.debug(board)
+        logger.debug("missing_from_rows {}".format(missing_from_rows))
+        logger.debug("missing_from_columns {}".format(missing_from_columns))
+        logger.debug("missing_from_grids {}".format(missing_from_grids))
+
+        logger.warning("\n" + "Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(
+            str(h) for h in possible_solutions))
+        logger.warning("\n" + "GRIDS --- Possible solutions - possible_values evaluates to:" + "\n" + "\n".join(
+            str(h) for h in possible_solutions_grids))
+
+
+
+
+
+
+        hmmmmmm = 0
+        new_start_flag = True
+
+        for x, row_value in enumerate(possible_solutions):
+            for y, cell_value in enumerate(row_value):
+
+                if len(cell_value) == 0:
+                    logger.debug("board[{}][{}] has already been solved".format(x, y))
+                    continue
+                elif new_start_flag:
+                    testing_cell_position = [x, y]
+                    logger.warning("Starting brute force at board[{}][{}]".format(x, y))
+                    testing_cell_value = cell_value
+                    digit = cell_value[y]
+                    logger.debug("Testing the digit = {}".format(digit))
+                    logger.debug("Setting the hard coded digit of {} to board[{}][{}]".format(digit, x, y))
+                    cell_value = digit
+                    new_start_flag = False
+                    continue
+                elif digit in cell_value:
+                    logger.debug("Remove digit {} from next cell value {} at board[{}][{}]".format(digit, cell_value, x, y))
+                    cell_value.remove(digit)
+            logger.info("Finished removing digit {} from row {}".format(digit, x))
+            logger.debug("Row from possible_solutions is now equal to: {}".format(row_value))
+            logger.debug("Now need to do the same for column and grid")
+
+
+        logger.critical(possible_solutions)
+
+
+
+
+
+
+        return board
+
+    backtracker(board, missing_from_rows, missing_from_columns, missing_from_grids, possible_solutions, possible_solutions_grids)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
